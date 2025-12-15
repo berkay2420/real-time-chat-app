@@ -1,31 +1,28 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { useAuth } from "../context/AuthContext";
+import { useNavigate, Link } from "react-router-dom";
 
-const LoginPage = () => {
+const RegisterPage = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
-  const { login } = useAuth();
 
-  const handleLogin = async () => {
+  const handleRegister = async () => {
     try {
-      const res = await axios.post("http://localhost:4000/auth/login", {
+      await axios.post("http://localhost:4000/auth/register", {
         username,
         password,
       });
 
-      login(res.data); // { id, username }
-      navigate("/");
+      navigate("/login");
     } catch (err) {
-      alert(err.response?.data?.message || "Login failed");
+      alert(err.response?.data?.message || "Register failed");
     }
   };
 
   return (
     <div>
-      <h2>Login</h2>
+      <h2>Register</h2>
 
       <input
         placeholder="Username"
@@ -40,13 +37,13 @@ const LoginPage = () => {
         onChange={(e) => setPassword(e.target.value)}
       />
 
-      <button onClick={handleLogin}>Login</button>
+      <button onClick={handleRegister}>Register</button>
 
       <p>
-        Don’t have an account? <a href="/register">Register</a>
+        Already have an account? <Link to="/login">Login</Link>
       </p>
     </div>
   );
 };
 
-export default LoginPage;
+export default RegisterPage;

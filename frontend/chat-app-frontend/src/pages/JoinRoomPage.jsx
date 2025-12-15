@@ -1,41 +1,41 @@
-
 import { useState } from "react";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
-const JoinRoomPage = ({username, setUsername, room, setRoom, socket}) =>{
-
+const JoinRoomPage = ({ socket }) => {
+  const { user } = useAuth();
   const navigate = useNavigate();
+  const [room, setRoom] = useState("");
 
   const joinRoom = () => {
-    if (room !== '' && username !== '') {
-      socket.emit('custom_event', 10,"Hi");
-      socket.emit('join_room', { username, room });
-      navigate('/chat', { replace: true });
-    }
-  }
+    if (!user || !room) return;
+
+    socket.emit("join_room", {
+      username: user.username,
+      room,
+    });
+
+    navigate("/chat", { state: { room } });
+  };
 
   return (
-    <div >
-      <div >
-        <h1>{`<>DevRooms</>`}</h1>
-        <input  
-          placeholder="Username..."
-          value={username} 
-          onChange={(e) => setUsername(e.target.value)}
-        />
+    <div>
+      <h1>{`<>DevRooms</>`}</h1>
+      <p>
+        Logged in as: <b>{user.username}</b>
+      </p>
 
-        <select value={room} onChange={(e) => setRoom(e.target.value)}>
-          <option value="">-- Select Room --</option>
-          <option value="javascript">JavaScript</option>
-          <option value="node">Node</option>
-          <option value="express">Express</option>
-          <option value="react">React</option>
-        </select>
+      <select value={room} onChange={(e) => setRoom(e.target.value)}>
+        <option value="">-- Select Room --</option>
+        <option value="javascript">JavaScript</option>
+        <option value="node">Node</option>
+        <option value="express">Express</option>
+        <option value="react">React</option>
+      </select>
 
-        <button className="btn btn-secondary" onClick={joinRoom}>Join Room</button>
-      </div>
+      <button onClick={joinRoom}>Join Room</button>
     </div>
   );
-}
+};
 
 export default JoinRoomPage;

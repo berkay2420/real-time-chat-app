@@ -1,47 +1,44 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import './App.css'
-import JoinRoomPage from './pages/JoinRoomPage.jsx'
-import { useState } from 'react';
-import {io} from "socket.io-client"
-import ChatRoomPage from './pages/ChatPage.jsx';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import "./App.css";
+import JoinRoomPage from "./pages/JoinRoomPage.jsx";
+import { io } from "socket.io-client";
+import ChatRoomPage from "./pages/ChatPage.jsx";
+import Register from "./pages/RegisterPage.jsx";
+import Login from "./pages/LoginPage.jsx";
+import { AuthProvider } from "./context/AuthContext.jsx";
+import RequireAuth from "./components/RequireAuth.jsx";
 
+const socket = io("http://localhost:4000");
 
-const socket = io('http://localhost:4000');
 function App() {
-  const [userName, setUserName] = useState('');
-  const [room, setRoom] = useState('');
-
-
   return (
-
-    <Router>
-      <div className='App'>
+    <AuthProvider>
+      <Router>
         <Routes>
-          <Route 
-            path='/' 
-            element={
-              <JoinRoomPage 
-                username={userName}
-                setUsername={setUserName}
-                room={room}
-                setRoom={setRoom}
-                socket={socket}  
-              />} 
-          />
           <Route
-            path='/chat'
+            path="/"
             element={
-              <ChatRoomPage 
-                username={userName} 
-                room={room} 
-                socket={socket} 
-              />
+              <RequireAuth>
+                <JoinRoomPage socket={socket} />
+              </RequireAuth>
             }
           />
+
+          <Route
+            path="/chat"
+            element={
+              <RequireAuth>
+                <ChatRoomPage socket={socket} />
+              </RequireAuth>
+            }
+          />
+
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
         </Routes>
-      </div>
-  </Router>
-  )
+      </Router>
+    </AuthProvider>
+  );
 }
 
-export default App
+export default App;
