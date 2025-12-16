@@ -1,7 +1,13 @@
 import { useEffect, useState, useRef } from "react";
 
-const MessagesPanel = ({ socket }) => {
-  const [messagesRecieved, setMessagesReceived] = useState([]);
+const MessagesPanel = ({ socket, room }) => {
+  const [messagesRecieved, setMessagesReceived] = useState(() => {
+    //read messages from storage
+    const savedMessages = localStorage.getItem(`chat_messages_${room}`);
+
+    //parse messages from storage else return empty list
+    return savedMessages ? JSON.parse(savedMessages) : [];
+  });
 
   const messagesColumnRef = useRef(null);
 
@@ -41,6 +47,12 @@ const MessagesPanel = ({ socket }) => {
 
     return () => socket.off('last_messages');
   },[socket]);
+
+  useEffect(() => {
+    //save messages to the local storage 
+    localStorage.setItem(`chat_messages_${room}`, JSON.stringify(messagesRecieved));
+
+  }, [messagesRecieved, room]); //works when this updated
 
   //scroll
   useEffect(() => {

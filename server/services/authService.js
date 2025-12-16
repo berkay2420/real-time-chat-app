@@ -1,10 +1,11 @@
-require('dotenv').config();
 const bcrypt = require("bcrypt");
 
+require('dotenv').config();
+
 const User = require('../models/user');
+const { signAuthToken, setAuthCookie, getAuthCookie, verifyAuthToken  } = require("../utils/authUtils");
 
-
-const registerService = async (username, password) => {
+const registerService = async (username, password, res) => {
   try {
     if (!username || !password) {
       throw new Error("Username and password are required");
@@ -24,8 +25,16 @@ const registerService = async (username, password) => {
 
     await newUser.save();
 
+    const payload = {
+      userId: existingUser._id.toString(),
+      username: existingUser.username,
+    }
+
+    const token = await signAuthToken(payload);
+    setAuthCookie(res, token);
+
     return {
-      id: newUser._id,
+      id: newUser._id.toString(),
       username: newUser.username,
     };
   } catch (error) {
@@ -34,7 +43,7 @@ const registerService = async (username, password) => {
 };
 
 
-const loginService = async (username, password) => {
+const loginService = async (username, password, res) => {
   try {
     if (!username || !password) {
       throw new Error("Username and password are required");
@@ -54,8 +63,16 @@ const loginService = async (username, password) => {
       throw new Error("Invalid password");
     }
 
+    const payload = {
+      userId: existingUser._id.toString(),
+      username: existingUser.username,
+    }
+
+    const token = await signAuthToken(payload);
+    setAuthCookie(res, token);
+
     return {
-      id: existingUser._id,
+      id: existingUser._id.toString(),
       username: existingUser.username,
     };
   } catch (error) {
@@ -63,7 +80,37 @@ const loginService = async (username, password) => {
   }
 };
 
+const getCurrentUserService = async (req) => {
+  try {
+    const token = getAuthCookie(req);
+    console.log("Token:", token);
+
+    if (!token) {
+      throw new Error("No auth token found");
+    }
+
+    const payload = await verifyAuthToken(token);
+    console.log("Payload:", payload);
+
+
+    const user = await User.findById(payload.userId);
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    return {
+      id: user._id,
+      username: user.username,
+    };
+  } catch (error) {
+    console.log("Error:", error.message); 
+    throw error;
+  }
+};
+
 module.exports = {
   registerService,
   loginService,
+  getCurrentUserService
 };

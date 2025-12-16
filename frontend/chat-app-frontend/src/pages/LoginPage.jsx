@@ -11,10 +11,14 @@ const LoginPage = () => {
 
   const handleLogin = async () => {
     try {
-      const res = await axios.post("http://localhost:4000/auth/login", {
-        username,
-        password,
-      });
+      const res = await axios.post(
+        "http://localhost:4000/auth/login",
+        {
+          username,
+          password,
+        },
+        { withCredentials: true }
+      );
 
       login(res.data); // { id, username }
       navigate("/");

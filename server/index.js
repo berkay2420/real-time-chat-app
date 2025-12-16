@@ -2,6 +2,7 @@ const express = require("express");
 http = require("http");
 const cors = require("cors");
 const {Server} = require("socket.io");
+const cookieParser = require("cookie-parser");
 
 const {connectDB} = require('./database/database');
 const connectSocket = require('./socket/index');
@@ -11,8 +12,15 @@ const authRoute = require('./routes/authRoute');
 require('dotenv').config();
 
 const app = express();
-app.use(cors());
+
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true
+}));
+
+
 app.use(express.json());
+app.use(cookieParser());
 
 
 connectDB();
@@ -20,9 +28,10 @@ connectDB();
 const server = http.createServer(app);
 
 const io = new Server(server, {
-    cors: {
+  cors: {
     origin: 'http://localhost:5173',
     methods: ['GET', 'POST'],
+    credentials: true
   },
 })
 

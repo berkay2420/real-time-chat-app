@@ -6,7 +6,7 @@ import MessagesPanel from "../components/MessagesPanel";
 import MessageInput from "../components/MessageInput";
 
 const ChatRoomPage = ({ socket }) => {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -18,6 +18,10 @@ const ChatRoomPage = ({ socket }) => {
     }
   }, [room]);
 
+  if (isLoading || !user) {
+    return <div>Loading...</div>;
+  }
+  
   if (!room) return null;
 
   return (
@@ -27,7 +31,7 @@ const ChatRoomPage = ({ socket }) => {
       </div>
 
       <div style={styles.chatPanel}>
-        <MessagesPanel socket={socket} />
+        <MessagesPanel socket={socket} room={room} />
         <MessageInput
           socket={socket}
           room={room}

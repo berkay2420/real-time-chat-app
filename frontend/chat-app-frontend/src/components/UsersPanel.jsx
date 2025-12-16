@@ -2,17 +2,24 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const UsersPanel = ({ socket, username, room }) => {
-  const [roomUsers, setRoomUsers] = useState([]);
+  const [roomUsers, setRoomUsers] = useState(() => {
+    const saved = localStorage.getItem(`room_users_${room}`);
+    return saved ? JSON.parse(saved) : [];
+  });
+
   const navigate = useNavigate();
 
   useEffect(() => {
-    socket.on('chatroom_users', (data) => {
+    const handleRoomUsers = (data) => {
       console.log(data);
       setRoomUsers(data);
-    });
+      localStorage.setItem(`room_users_${room}`, JSON.stringify(data));
+    };
 
-    return () => socket.off('chatroom_users');
-  }, [socket]);
+    socket.on('chatroom_users', handleRoomUsers);
+
+    return () => socket.off('chatroom_users', handleRoomUsers);
+  }, [socket, room]);
 
   const leaveRoom = () => {
     const __createdtime__ = Date.now();
@@ -30,19 +37,19 @@ const UsersPanel = ({ socket, username, room }) => {
         )}
 
         <ul style={styles.usersList}>
-          {roomUsers.map((user) => (
-            <li
-              key={user.id}
-              style={{
-                ...styles.userItem,
-                fontWeight:
-                  user.username === username ? 'bold' : 'normal',
-              }}
-            >
-              {user.username}
-            </li>
-          ))}
-        </ul>
+          {Array.from(new Set(roomUsers.map(user => user.username))).map((username) => (
+        <li
+          key={username}
+          style={{
+            ...styles.userItem,
+            fontWeight:
+              username === username ? 'bold' : 'normal',
+          }}
+        >
+          {username}
+        </li>
+      ))}
+    </ul>
       </div>
 
       <button style={styles.leaveButton} onClick={leaveRoom}>

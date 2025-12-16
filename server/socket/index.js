@@ -1,5 +1,7 @@
-const saveMessage = require('../services/saveMessage');
-const getMessages = require('../services/getMessages');
+const saveMessage = require('../utils/saveMessage');
+const getMessages = require('../utils/getMessages');
+const leaveRoom = require('../utils/leaveRoom')
+
 
 //io --> main server
 //socket1, socket2, socket3... --> users
@@ -26,7 +28,16 @@ function connectSocket(io) {
 
       console.log(`User ${username} joined room ${room}`);
 
+      allUsers = allUsers.filter((user) => user.username !== username);
+      allUsers.push({ id: socket.id, room: room, username: username });
+
+
       let __createdtime__ = Date.now();
+
+      let chatRoomUsers = allUsers.filter((user) => user.room === room);
+      
+      chatRoom = room;
+
 
       //Send a message to the all users in that room except new user
       socket.to(room).emit('receive_message', {
@@ -34,7 +45,6 @@ function connectSocket(io) {
         username: CHAT_BOT,
         __createdtime__
       });
-
      
       //Send a welcome message to the new user
       socket.emit('receive_message', {

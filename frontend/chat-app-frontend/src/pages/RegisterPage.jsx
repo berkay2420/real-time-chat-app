@@ -9,10 +9,11 @@ const RegisterPage = () => {
 
   const handleRegister = async () => {
     try {
-      await axios.post("http://localhost:4000/auth/register", {
-        username,
-        password,
-      });
+      await axios.post(
+        "http://localhost:4000/auth/register",
+        { username, password },
+        { withCredentials: true }
+      );
 
       navigate("/login");
     } catch (err) {
