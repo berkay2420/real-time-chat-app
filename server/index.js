@@ -1,5 +1,5 @@
 const express = require("express");
-http = require("http");
+const http = require("http");
 const cors = require("cors");
 const {Server} = require("socket.io");
 const cookieParser = require("cookie-parser");
@@ -10,12 +10,14 @@ const connectSocket = require('./socket/index');
 const authRoute = require('./routes/authRoute');
 const roomRoute = require('./routes/roomRoute');
 
+const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
+
 require('dotenv').config();
 
 const app = express();
 
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: CLIENT_URL,
   credentials: true
 }));
 
@@ -30,7 +32,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: 'http://localhost:5173',
+    origin: CLIENT_URL,
     methods: ['GET', 'POST'],
     credentials: true
   },
@@ -38,8 +40,10 @@ const io = new Server(server, {
 
 connectSocket(io);
 
-server.listen(4000, ()=>{
-  console.log(`The server started listening on port 5173`);
+const PORT = process.env.PORT || 4000;
+
+server.listen(PORT, ()=>{
+  console.log(`The server started listening on port ${PORT}`);
 });
 
 
