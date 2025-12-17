@@ -15,7 +15,7 @@ const JoinRoomPage = ({ socket }) => {
       room,
     });
 
-    navigate("/chat", { state: { room } });
+    navigate(`/chat?room=${room}`);
   };
 
   return (
@@ -31,6 +31,7 @@ const JoinRoomPage = ({ socket }) => {
         <option value="node">Node</option>
         <option value="express">Express</option>
         <option value="react">React</option>
+        <option value="spring">Spring</option>
       </select>
 
       <button onClick={joinRoom}>Join Room</button>

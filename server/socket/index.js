@@ -7,7 +7,6 @@ const leaveRoom = require('../utils/leaveRoom')
 //socket1, socket2, socket3... --> users
 
 const CHAT_BOT = 'SocketBot';
-let chatRoom = '';
 let allUsers = [];
 
 function connectSocket(io) {
@@ -28,16 +27,12 @@ function connectSocket(io) {
 
       console.log(`User ${username} joined room ${room}`);
 
-      allUsers = allUsers.filter((user) => user.username !== username);
+      allUsers = allUsers.filter((user) => user.id !== socket.id);
       allUsers.push({ id: socket.id, room: room, username: username });
-
 
       let __createdtime__ = Date.now();
 
       let chatRoomUsers = allUsers.filter((user) => user.room === room);
-      
-      chatRoom = room;
-
 
       //Send a message to the all users in that room except new user
       socket.to(room).emit('receive_message', {
@@ -53,21 +48,13 @@ function connectSocket(io) {
         __createdtime__
       });
 
-
       //emit to the current user
       //to().emit() broadcasting to the room excluding current user
 
-      chatRoom = room;
+      io.in(room).emit('chatroom_users', chatRoomUsers);
 
-      allUsers.push({ id: socket.id, room: room, username: username });
-
-      chatRoomUsers = allUsers.filter((user) => user.room === room);
-
-      socket.to(room).emit('chatroom_users', chatRoomUsers);
-      socket.emit('chatroom_users', chatRoomUsers);
-
-      console.log(`all users ${allUsers}`);
-      console.log(`users in this room ${chatRoomUsers}`);
+      console.log(`all users ${JSON.stringify(allUsers)}`);
+      console.log(`users in this room ${JSON.stringify(chatRoomUsers)}`);
 
       //get last 100 message in room
       getMessages(room)
@@ -100,9 +87,11 @@ function connectSocket(io) {
 
       const __createdtime__ = Date.now();
 
+      allUsers = allUsers.filter((user) => user.id !== socket.id);
+
       //removing user from memory
-      socket.to(room).emit('chatroom_users', allUsers);
-      socket.to(room).emit('receive_message', {
+      io.in(room).emit('chatroom_users', allUsers);
+      io.in(room).emit('receive_message', {
         username: CHAT_BOT,
         message: `${username} has left the chat`,
         __createdtime__,
@@ -115,9 +104,10 @@ function connectSocket(io) {
       const user = allUsers.find((user) => user.id == socket.id);
       if (user?.username) {
         allUsers = leaveRoom(socket.id, allUsers);
-        socket.to(chatRoom).emit('chatroom_users', allUsers);
-        socket.to(chatRoom).emit('receive_message', {
+        io.in(user.room).emit('chatroom_users', allUsers);
+        io.in(user.room).emit('receive_message', {
           message: `${user.username} has disconnected from the chat.`,
+          username: CHAT_BOT,
         });
       }
     });

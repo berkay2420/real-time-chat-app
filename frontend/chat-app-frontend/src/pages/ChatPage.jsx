@@ -1,4 +1,4 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import UsersPanel from "../components/UsersPanel";
@@ -7,16 +7,25 @@ import MessageInput from "../components/MessageInput";
 
 const ChatRoomPage = ({ socket }) => {
   const { user, isLoading } = useAuth();
-  const location = useLocation();
+  const [searchparams] = useSearchParams();
   const navigate = useNavigate();
 
-  const room = location.state?.room;
+  const room = searchparams.get("room");
 
   useEffect(() => {
     if (!room) {
       navigate("/");
     }
-  }, [room]);
+  }, [room, navigate]);
+
+  useEffect(() => {
+    if (room && user && socket) {
+      socket.emit("join_room", {
+        username: user.username,
+        room,
+      });
+    }
+  }, [room, user, socket]);
 
   if (isLoading || !user) {
     return <div>Loading...</div>;

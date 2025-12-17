@@ -26,8 +26,8 @@ const registerService = async (username, password, res) => {
     await newUser.save();
 
     const payload = {
-      userId: existingUser._id.toString(),
-      username: existingUser.username,
+      userId: newUser._id.toHexString(),
+      username: newUser.username,
     }
 
     const token = await signAuthToken(payload);

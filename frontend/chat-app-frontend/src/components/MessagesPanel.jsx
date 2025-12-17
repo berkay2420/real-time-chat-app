@@ -10,6 +10,7 @@ const MessagesPanel = ({ socket, room }) => {
   });
 
   const messagesColumnRef = useRef(null);
+  const hasLoadedLastMessagesRef = useRef(false);
 
   useEffect(() => {
 
@@ -37,16 +38,19 @@ const MessagesPanel = ({ socket, room }) => {
 
   //fetch last 100 messages 
   useEffect(() => {
-    socket.on('last_messages', (lastMessages) => {
-      console.log(`fetched last 100 messages from room`);
+    if (!hasLoadedLastMessagesRef.current) {
+      const handleLastMessages = (lastMessages) => {
+        console.log(`fetched last 100 messages from room`);
+        const sorted = sortMessagesByDate(lastMessages);
+        setMessagesReceived(sorted);
+        hasLoadedLastMessagesRef.current = true;
+      };
 
-      lastMessages = sortMessagesByDate(lastMessages);
+      socket.on('last_messages', handleLastMessages);
 
-      setMessagesReceived((state) => [...lastMessages, ...state]);
-    });
-
-    return () => socket.off('last_messages');
-  },[socket]);
+      return () => socket.off('last_messages', handleLastMessages);
+    }
+  }, [socket]);
 
   useEffect(() => {
     //save messages to the local storage 
@@ -56,8 +60,9 @@ const MessagesPanel = ({ socket, room }) => {
 
   //scroll
   useEffect(() => {
-    messagesColumnRef.current.scrollTop =
-      messagesColumnRef.current.scrollHeight;
+    if (messagesColumnRef.current) {
+      messagesColumnRef.current.scrollTop = messagesColumnRef.current.scrollHeight;
+    }
   }, [messagesRecieved]);
 
   function sortMessagesByDate(messages) {
@@ -67,27 +72,39 @@ const MessagesPanel = ({ socket, room }) => {
   }
 
 
-  function formatDateFromTimestamp(timestamp) {
-    const date = new Date(timestamp);
-    return date.toLocaleString();
+  function formatTimeFromTimestamp(timestamp) {
+    if (!timestamp) return 'Invalid time';
+    
+    const time = typeof timestamp === 'string' ? new Date(timestamp) : new Date(timestamp);
+    
+    if (isNaN(time.getTime())) return 'Invalid time';
+    
+    return time.toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: false
+    });
   }
 
-  console.log("STATE:", messagesRecieved);
   
-  return (  
+   return (  
     <div ref={messagesColumnRef} style={styles.box}>
       <div style={styles.messages}>
-        {messagesRecieved.map((msg, i) => (
-          <div key={i} style={styles.messageItem}>
-            <div style={styles.metaRow}>
-              <span style={styles.msgMeta}>{msg.username}</span>
-              <span style={styles.msgMeta}>
-                {formatDateFromTimestamp(msg.createdAt || msg.__createdtime__)}
-              </span>
+        {messagesRecieved.length === 0 ? (
+          <p style={{ textAlign: 'center', color: '#999' }}>No messages yet</p>
+        ) : (
+          messagesRecieved.map((msg, i) => (
+            <div key={i} style={styles.messageItem}>
+              <div style={styles.metaRow}>
+                <span style={styles.msgMeta}>{msg.username}</span>
+                <span style={styles.msgMeta}>
+                  {formatTimeFromTimestamp(msg.__createdtime__ || msg.createdAt)}
+                </span>
+              </div>
+              <p style={styles.msgText}>{msg.message}</p>
             </div>
-            <p style={styles.msgText}>{msg.message}</p>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );

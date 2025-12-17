@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const UsersPanel = ({ socket, username, room }) => {
@@ -8,6 +8,7 @@ const UsersPanel = ({ socket, username, room }) => {
   });
 
   const navigate = useNavigate();
+  const hasJoinedRef = useRef(false);
 
   useEffect(() => {
     const handleRoomUsers = (data) => {
@@ -27,6 +28,9 @@ const UsersPanel = ({ socket, username, room }) => {
     navigate('/', { replace: true });
   };
 
+  const uniqueUsers = Array.from(new Set(roomUsers.map(user => user.username)));
+  const currentUsername = username;
+
   return (
     <div style={styles.roomAndUsersColumn}>
       <h2 style={styles.roomTitle}>{room}</h2>
@@ -37,19 +41,18 @@ const UsersPanel = ({ socket, username, room }) => {
         )}
 
         <ul style={styles.usersList}>
-          {Array.from(new Set(roomUsers.map(user => user.username))).map((username) => (
-        <li
-          key={username}
-          style={{
-            ...styles.userItem,
-            fontWeight:
-              username === username ? 'bold' : 'normal',
-          }}
-        >
-          {username}
-        </li>
-      ))}
-    </ul>
+          {uniqueUsers.map((user) => (
+            <li
+              key={user}
+              style={{
+                ...styles.userItem,
+                fontWeight: user === currentUsername ? 'bold' : 'normal',
+              }}
+            >
+              {user}
+            </li>
+          ))}
+        </ul>
       </div>
 
       <button style={styles.leaveButton} onClick={leaveRoom}>
