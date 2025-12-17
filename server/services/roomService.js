@@ -8,7 +8,7 @@ const createRoomService = async(roomname, creator, entrancePassword, res) => {
       throw new Error("You have to set roomname and password ");
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(entrancePassword, 10);
 
     const newRoom = new Room({
       roomname,
@@ -19,6 +19,7 @@ const createRoomService = async(roomname, creator, entrancePassword, res) => {
     await newRoom.save();
 
   } catch (error) {
+    console.error("Create room error:", error);
     throw error;
     
   }

@@ -44,4 +44,4 @@ server.listen(4000, ()=>{
 
 
 app.use("/auth", authRoute);
-app.use("room", roomRoute);
+app.use("/rooms", roomRoute);

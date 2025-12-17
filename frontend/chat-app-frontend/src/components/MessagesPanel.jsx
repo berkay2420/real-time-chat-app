@@ -1,6 +1,11 @@
 import { useEffect, useState, useRef } from "react";
+import { useAuth } from "../context/AuthContext"; 
+import { Clock } from "lucide-react";
 
 const MessagesPanel = ({ socket, room }) => {
+
+  const { user, isLoading } = useAuth();
+  
   const [messagesRecieved, setMessagesReceived] = useState(() => {
     //read messages from storage
     const savedMessages = localStorage.getItem(`chat_messages_${room}`);
@@ -73,11 +78,11 @@ const MessagesPanel = ({ socket, room }) => {
 
 
   function formatTimeFromTimestamp(timestamp) {
-    if (!timestamp) return 'Invalid time';
+    if (!timestamp) return '...';
     
     const time = typeof timestamp === 'string' ? new Date(timestamp) : new Date(timestamp);
     
-    if (isNaN(time.getTime())) return 'Invalid time';
+    if (isNaN(time.getTime())) return '...';
     
     return time.toLocaleTimeString('en-US', { 
       hour: '2-digit', 
@@ -87,68 +92,61 @@ const MessagesPanel = ({ socket, room }) => {
   }
 
   
-   return (  
-    <div ref={messagesColumnRef} style={styles.box}>
-      <div style={styles.messages}>
-        {messagesRecieved.length === 0 ? (
-          <p style={{ textAlign: 'center', color: '#999' }}>No messages yet</p>
-        ) : (
-          messagesRecieved.map((msg, i) => (
-            <div key={i} style={styles.messageItem}>
-              <div style={styles.metaRow}>
-                <span style={styles.msgMeta}>{msg.username}</span>
-                <span style={styles.msgMeta}>
-                  {formatTimeFromTimestamp(msg.__createdtime__ || msg.createdAt)}
+  return (
+    <div
+      ref={messagesColumnRef}
+      className="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-50 space-y-6 custom-scrollbar"
+    >
+      {messagesRecieved.length === 0 && (
+        <div className="flex flex-col items-center justify-center h-full text-slate-400 opacity-60">
+          <div className="w-16 h-16 bg-slate-200 rounded-full mb-4 animate-pulse"></div>
+          <p>No messages yet. Start the conversation!</p>
+        </div>
+      )}
+
+      {messagesRecieved.map((msg, i) => {
+        const isMe = user?.username === msg.username;
+        const isSystem = msg.username === 'ChatBot'; // Assuming there might be a system bot
+
+        if (isSystem) {
+           return (
+             <div key={i} className="flex justify-center my-4">
+               <span className="bg-slate-200 text-slate-600 text-xs px-3 py-1 rounded-full">
+                 {msg.message}
+               </span>
+             </div>
+           )
+        }
+
+        return (
+          <div
+            key={i}
+            className={`flex w-full ${isMe ? "justify-end" : "justify-start"}`}
+          >
+            <div className={`flex flex-col max-w-[85%] md:max-w-[70%] ${isMe ? "items-end" : "items-start"}`}>
+              
+              <div className={`flex items-baseline gap-2 mb-1 ${isMe ? "flex-row-reverse" : "flex-row"}`}>
+                <span className="text-xs font-bold text-slate-700">{msg.username}</span>
+                <span className="text-[10px] text-slate-400 flex items-center gap-1">
+                   {formatTimeFromTimestamp(msg.__createdtime__ || msg.createdAt)}
                 </span>
               </div>
-              <p style={styles.msgText}>{msg.message}</p>
+
+              <div
+                className={`px-4 py-3 rounded-2xl text-sm shadow-sm relative break-words ${
+                  isMe
+                    ? "bg-blue-600 text-white rounded-tr-none"
+                    : "bg-white text-slate-800 border border-slate-100 rounded-tl-none"
+                }`}
+              >
+                {msg.message}
+              </div>
             </div>
-          ))
-        )}
-      </div>
+          </div>
+        );
+      })}
     </div>
   );
-};
-
-const styles = {
-  box: {
-    border: "1px solid #ccc",
-    padding: "10px",
-    borderRadius: "8px",
-    height: "100%",
-    overflowY: "auto",
-    background: "#f9f9f9"
-  },
-
-  messages: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "12px"
-  },
-
-  messageItem: {
-    background: "white",
-    padding: "10px",
-    borderRadius: "6px",
-    border: "1px solid #ddd",
-  },
-
-  metaRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    marginBottom: "4px",
-    fontSize: "12px",
-    color: "#555"
-  },
-
-  msgMeta: {
-    fontWeight: "600"
-  },
-
-  msgText: {
-    margin: 0,
-    fontSize: "14px"
-  }
 };
 
 export default MessagesPanel;

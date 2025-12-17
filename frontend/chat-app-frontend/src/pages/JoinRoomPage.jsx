@@ -1,31 +1,45 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { MessageSquare, Code2, Plus, X } from "lucide-react";
+import { MessageSquare, Code2, Plus, X, MessageSquareLock, ArrowRight, Hash } from "lucide-react";
 
 const JoinRoomPage = ({ socket }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [selectedRoom, setSelectedRoom] = useState("");
 
+  const [rooms, setRooms] = useState([]);
+  const [selectedRoom, setSelectedRoom] = useState("");
+  const [roomPassword, setRoomPassword] = useState("");
 
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [customRoomName, setCustomRoomName] = useState("");
-  const [customRooms, setCustomRooms] = useState([]);
+  const [newRoomName, setNewRoomName] = useState("");
+  const [newRoomPassword, setNewRoomPassword] = useState("");
   
-  const predefinedRooms = [
-    { id: "javascript", name: "JavaScript", members: 12 },
-    { id: "node", name: "Node.js", members: 8 },
-    { id: "express", name: "Express", members: 5 },
-    { id: "react", name: "React", members: 15 },
-    { id: "spring", name: "Spring", members: 3 },
-  ];
+  //get rooms
+  useEffect(() => {
+    fetch("http://localhost:4000/rooms")
+      .then((res) => res.json())
+      .then((data) => setRooms(data))
+      .catch(() => setRooms([]));
+  }, []);
 
 
-  const allRooms = [...predefinedRooms, ...customRooms];
-  
-  const joinRoom = () => {
-    if (!user || !selectedRoom) return;
+  const joinRoom = async () => {
+    if (!selectedRoom || !roomPassword) return;
+
+    const res = await fetch("http://localhost:4000/rooms/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        roomname: selectedRoom,
+        password: roomPassword,
+      }),
+    });
+
+    if (!res.ok) {
+      alert("Invalid room password");
+      return;
+    }
 
     socket.emit("join_room", {
       username: user.username,
@@ -36,128 +50,172 @@ const JoinRoomPage = ({ socket }) => {
   };
 
 
-  const createRoom = () => {
-    if (!customRoomName.trim()) return;
+  const createRoom = async () => {
+    if (!newRoomName || !newRoomPassword) return;
 
-    const roomId = customRoomName.toLowerCase().replace(/\s+/g, "-");
+    const res = await fetch("http://localhost:4000/rooms/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        roomname: newRoomName,
+        creator: user.username,
+        entrancePassword: newRoomPassword,
+      }),
+    });
 
-    if (allRooms.find((r) => r.id === roomId)) return;
+    if (!res.ok) {
+      alert("Room creation failed");
+      return;
+    }
 
-    setCustomRooms([
-      ...customRooms,
-      { id: roomId, name: customRoomName, members: 1, isCustom: true },
-    ]);
+    setRooms([{ roomname: newRoomName, creator: user.username }, ...rooms]);
+    setSelectedRoom(newRoomName);
 
-    setSelectedRoom(roomId);
-    setCustomRoomName("");
+    setNewRoomName("");
+    setNewRoomPassword("");
     setShowCreateModal(false);
   };
   
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
+return (
+    <div className="min-h-screen bg-slate-50 flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-5xl space-y-8">
+        
         {/* Header */}
-        <div className="text-center mb-12">
-          <div className="flex justify-center mb-4">
-            <div className="p-3 bg-blue-600 rounded-lg">
-              <MessageSquare className="w-10 h-10 text-white" />
-            </div>
+        <div className="text-center space-y-4">
+          <div className="inline-flex items-center justify-center p-4 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl shadow-lg shadow-blue-500/30">
+            <MessageSquare className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-5xl font-bold text-gray-900">DevRooms</h1>
-          <p className="text-gray-600">Connect with developers worldwide</p>
+          <div>
+            <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">Join a Workspace</h1>
+            <p className="mt-2 text-lg text-slate-600">Select a room below or create your own secure channel.</p>
+          </div>
         </div>
 
-        {/* User */}
-        <div className="mb-10">
-          <p className="text-sm text-gray-600">Logged in as</p>
-          <p className="font-semibold text-lg">{user?.username}</p>
-        </div>
+        {/* Main Content Area */}
+        <div className="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden">
+          <div className="p-8">
+            
+            {/* Rooms Grid */}
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
+                  <Hash className="w-5 h-5 text-blue-500" /> Available Rooms
+                </h2>
+                <span className="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full">{rooms.length} Active</span>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                {rooms.map((room) => (
+                  <button
+                    key={room.roomname}
+                    onClick={() => setSelectedRoom(room.roomname)}
+                    className={`group relative p-4 rounded-xl border-2 text-left transition-all duration-200 hover:shadow-md ${
+                      selectedRoom === room.roomname
+                        ? "border-blue-600 bg-blue-50/50 ring-1 ring-blue-600/20"
+                        : "border-slate-100 bg-white hover:border-blue-300 hover:bg-slate-50"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className={`font-bold text-lg ${selectedRoom === room.roomname ? "text-blue-700" : "text-slate-700"}`}>
+                          {room.roomname}
+                        </p>
+                        <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
+                           by <span className="font-medium text-slate-600">@{room.creator}</span>
+                        </p>
+                      </div>
+                      <div className={`p-2 rounded-lg transition-colors ${selectedRoom === room.roomname ? "bg-blue-200 text-blue-700" : "bg-slate-100 text-slate-400 group-hover:bg-white group-hover:text-blue-500"}`}>
+                        <MessageSquareLock className="w-5 h-5" />
+                      </div>
+                    </div>
+                  </button>
+                ))}
+                
+                {/* Create New Trigger Card */}
+                <button
+                  onClick={() => setShowCreateModal(true)}
+                  className="flex flex-col items-center justify-center p-4 rounded-xl border-2 border-dashed border-slate-300 text-slate-400 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50/30 transition-all gap-2"
+                >
+                  <div className="p-2 bg-slate-100 rounded-full group-hover:bg-blue-100">
+                    <Plus className="w-6 h-6" />
+                  </div>
+                  <span className="font-medium">Create New Room</span>
+                </button>
+              </div>
+            </div>
 
-        {/* Rooms */}
-        <div className="mb-8 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-900">
-            Available Rooms
-          </h2>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
-          >
-            <Plus className="w-4 h-4" />
-            Create Room
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
-          {allRooms.map((room) => (
-            <button
-              key={room.id}
-              onClick={() => setSelectedRoom(room.id)}
-              className={`border-2 rounded-xl p-6 text-left transition ${
-                selectedRoom === room.id
-                  ? "border-blue-600 bg-blue-50 shadow-lg"
-                  : "border-blue-200 bg-white hover:border-blue-500 hover:shadow"
-              }`}
-            >
-              <div
-                className={`p-2 rounded-lg mb-3 inline-block ${
-                  selectedRoom === room.id
-                    ? "bg-blue-600"
-                    : "bg-blue-100"
-                }`}
-              >
-                <Code2
-                  className={`w-5 h-5 ${
-                    selectedRoom === room.id
-                      ? "text-white"
-                      : "text-blue-600"
-                  }`}
+            {/* Action Bar */}
+            <div className="flex flex-col md:flex-row gap-4 pt-6 border-t border-slate-100">
+              <div className="flex-1">
+                <input
+                  type="password"
+                  placeholder="Enter room password..."
+                  value={roomPassword}
+                  onChange={(e) => setRoomPassword(e.target.value)}
+                  className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700 placeholder:text-slate-400"
                 />
               </div>
-
-              <p className="font-semibold text-gray-900">{room.name}</p>
-              <p className="text-sm text-gray-500 mt-2">
-                {room.members} members
-              </p>
-            </button>
-          ))}
+              <button
+                onClick={joinRoom}
+                disabled={!selectedRoom}
+                className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white font-semibold py-3.5 px-8 rounded-xl transition-all shadow-lg shadow-blue-500/30 hover:shadow-blue-500/40 active:transform active:scale-95"
+              >
+                Join Room <ArrowRight className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
         </div>
-
-        {/* Join Button (FIXED – NOW VISIBLE) */}
-        <button
-          onClick={joinRoom}
-          disabled={!selectedRoom}
-          className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white font-semibold py-3 rounded-lg"
-        >
-          Join Room
-        </button>
       </div>
 
-      {/* Create Room Modal */}
+      {/* CREATE MODAL */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold">Create New Room</h3>
-              <button onClick={() => setShowCreateModal(false)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-all">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all scale-100">
+            
+            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+              <h3 className="text-xl font-bold text-slate-800">Create New Room</h3>
+              <button onClick={() => setShowCreateModal(false)} className="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-1 rounded-lg transition">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <input
-              value={customRoomName}
-              onChange={(e) => setCustomRoomName(e.target.value)}
-              placeholder="Room name"
-              className="w-full border-2 border-blue-200 rounded-lg px-4 py-2 mb-4"
-              autoFocus
-            />
+            <div className="p-6 space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700">Room Name</label>
+                <input
+                  placeholder="e.g. Developers Hangout"
+                  value={newRoomName}
+                  onChange={(e) => setNewRoomName(e.target.value)}
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                />
+              </div>
 
-            <button
-              onClick={createRoom}
-              disabled={!customRoomName.trim()}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white py-2 rounded-lg"
-            >
-              Create & Select
-            </button>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700">Set Password</label>
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  value={newRoomPassword}
+                  onChange={(e) => setNewRoomPassword(e.target.value)}
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                />
+              </div>
+
+              <div className="pt-2 flex gap-3">
+                <button
+                  onClick={() => setShowCreateModal(false)}
+                  className="flex-1 px-4 py-3 border border-slate-200 text-slate-600 font-medium rounded-xl hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={createRoom}
+                  className="flex-1 px-4 py-3 bg-slate-900 text-white font-medium rounded-xl hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/20"
+                >
+                  Create Room
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
