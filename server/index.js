@@ -8,6 +8,7 @@ const {connectDB} = require('./database/database');
 const connectSocket = require('./socket/index');
 
 const authRoute = require('./routes/authRoute');
+const roomRoute = require('./routes/roomRoute');
 
 require('dotenv').config();
 
@@ -43,3 +44,4 @@ server.listen(4000, ()=>{
 
 
 app.use("/auth", authRoute);
+app.use("room", roomRoute);
