@@ -11,10 +11,12 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
 
+  const API_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:4000";
+
   const handleLogin = async () => {
     try {
       const res = await axios.post(
-        "http://localhost:4000/auth/login",
+        `${API_URL}/auth/login`,
         {
           username,
           password,

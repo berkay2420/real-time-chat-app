@@ -8,7 +8,7 @@ import Login from "./pages/LoginPage.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import RequireAuth from "./components/RequireAuth.jsx";
 
-const socket = io("http://localhost:4000");
+const socket = io(import.meta.env.VITE_SERVER_URL || "http://localhost:4000");
 
 function App() {
   return (

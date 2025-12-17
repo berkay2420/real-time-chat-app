@@ -15,9 +15,11 @@ const JoinRoomPage = ({ socket }) => {
   const [newRoomName, setNewRoomName] = useState("");
   const [newRoomPassword, setNewRoomPassword] = useState("");
   
+  const API_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:4000";
+
   //get rooms
   useEffect(() => {
-    fetch("http://localhost:4000/rooms")
+    fetch(`${API_URL}/rooms`)
       .then((res) => res.json())
       .then((data) => setRooms(data))
       .catch(() => setRooms([]));
@@ -27,7 +29,7 @@ const JoinRoomPage = ({ socket }) => {
   const joinRoom = async () => {
     if (!selectedRoom || !roomPassword) return;
 
-    const res = await fetch("http://localhost:4000/rooms/verify", {
+    const res = await fetch(`${API_URL}/rooms/verify`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -53,7 +55,7 @@ const JoinRoomPage = ({ socket }) => {
   const createRoom = async () => {
     if (!newRoomName || !newRoomPassword) return;
 
-    const res = await fetch("http://localhost:4000/rooms/create", {
+    const res = await fetch(`${API_URL}/rooms/create`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -98,7 +100,7 @@ return (
             {/* Rooms Grid */}
             <div className="mb-8">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
+                <h2 className="text-2lg font-semibold text-slate-800 flex items-center gap-2">
                   <Hash className="w-5 h-5 text-blue-500" /> Available Rooms
                 </h2>
                 <span className="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full">{rooms.length} Active</span>
@@ -183,7 +185,7 @@ return (
               <div className="space-y-2">
                 <label className="text-sm font-medium text-slate-700">Room Name</label>
                 <input
-                  placeholder="e.g. Developers Hangout"
+                  placeholder="e.g. Hello World"
                   value={newRoomName}
                   onChange={(e) => setNewRoomName(e.target.value)}
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"

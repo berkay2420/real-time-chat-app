@@ -5,7 +5,7 @@ import { Clock } from "lucide-react";
 const MessagesPanel = ({ socket, room }) => {
 
   const { user, isLoading } = useAuth();
-  
+
   const [messagesRecieved, setMessagesReceived] = useState(() => {
     //read messages from storage
     const savedMessages = localStorage.getItem(`chat_messages_${room}`);
@@ -133,7 +133,7 @@ const MessagesPanel = ({ socket, room }) => {
               </div>
 
               <div
-                className={`px-4 py-3 rounded-2xl text-sm shadow-sm relative break-words ${
+                className={`px-4 py-3 rounded-2xl text-sm shadow-sm relative wrap-break-word ${
                   isMe
                     ? "bg-blue-600 text-white rounded-tr-none"
                     : "bg-white text-slate-800 border border-slate-100 rounded-tl-none"
