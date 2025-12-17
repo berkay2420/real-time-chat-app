@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require("express");
 const http = require("http");
 const cors = require("cors");
@@ -12,12 +14,11 @@ const roomRoute = require('./routes/roomRoute');
 
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 
-require('dotenv').config();
-
 const app = express();
 
 app.use(cors({
   origin: CLIENT_URL,
+  methods: ["GET", "POST"],
   credentials: true
 }));
 
