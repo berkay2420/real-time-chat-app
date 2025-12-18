@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { MessageSquare } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 
 const LoginPage = () => {
@@ -25,9 +26,12 @@ const LoginPage = () => {
       );
 
       login(res.data); // { id, username }
+
+      toast.success("Login successful!");
+
       navigate("/");
     } catch (err) {
-      alert(err.response?.data?.message || "Login failed");
+      toast.error(err.response?.data?.message || "Login failed");
     }
   };
 

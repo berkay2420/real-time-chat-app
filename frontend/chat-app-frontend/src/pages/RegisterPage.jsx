@@ -19,9 +19,10 @@ const RegisterPage = () => {
         { withCredentials: true }
       );
 
+      toast.success("Successfuly registered!");
       navigate("/login");
     } catch (err) {
-      alert(err.response?.data?.message || "Register failed");
+      toast.error(err.response?.data?.message || "Register failed");
     }
   };
 

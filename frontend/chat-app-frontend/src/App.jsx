@@ -8,7 +8,7 @@ import Login from "./pages/LoginPage.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import RequireAuth from "./components/RequireAuth.jsx";
 import { useAuth } from "./context/AuthContext";
-
+import ToasterComponent from "./components/ToastComponent.jsx";
 
 function AppContent() {
   const { user, isLoading } = useAuth();
@@ -31,30 +31,33 @@ function AppContent() {
     : null;
 
   return (
-    <Router>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <RequireAuth>
-              <JoinRoomPage socket={socket} />
-            </RequireAuth>
-          }
-        />
+    <>
+      <ToasterComponent/>
+      <Router>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <RequireAuth>
+                <JoinRoomPage socket={socket} />
+              </RequireAuth>
+            }
+          />
 
-        <Route
-          path="/chat"
-          element={
-            <RequireAuth>
-              <ChatRoomPage socket={socket} />
-            </RequireAuth>
-          }
-        />
+          <Route
+            path="/chat"
+            element={
+              <RequireAuth>
+                <ChatRoomPage socket={socket} />
+              </RequireAuth>
+            }
+          />
 
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-      </Routes>
-    </Router>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+        </Routes>
+      </Router>
+    </>
   );
 }
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { MessageSquare, Code2, Plus, X, MessageSquareLock, ArrowRight, Hash } from "lucide-react";
+import {toast} from "react-hot-toast";
 
 const JoinRoomPage = ({ socket }) => {
   const { user } = useAuth();
@@ -31,53 +32,63 @@ const JoinRoomPage = ({ socket }) => {
   const joinRoom = async () => {
     if (!selectedRoom || !roomPassword) return;
 
-    const res = await fetch(`${API_URL}/rooms/verify`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        roomname: selectedRoom,
-        password: roomPassword,
-      }),
-    });
+    try {
+      const res = await fetch(`${API_URL}/rooms/verify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ roomname: selectedRoom, password: roomPassword }),
+      });
 
-    if (!res.ok) {
-      alert("Invalid room password");
-      return;
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Invalid room password");
+      }
+
+      socket.emit("join_room", { username: user.username, room: selectedRoom });
+
+      toast.success(`Joined room ${selectedRoom}`); 
+
+      navigate(`/chat?room=${selectedRoom}`);
+    } catch (error) {
+      toast.error(error.message); 
     }
-
-    socket.emit("join_room", {
-      username: user.username,
-      room: selectedRoom,
-    });
-
-    navigate(`/chat?room=${selectedRoom}`);
   };
 
 
   const createRoom = async () => {
+
     if (!newRoomName || !newRoomPassword) return;
 
-    const res = await fetch(`${API_URL}/rooms/create`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        roomname: newRoomName,
-        creator: user.username,
-        entrancePassword: newRoomPassword,
-      }),
-    });
+    try {
+      
+      const res = await fetch(`${API_URL}/rooms/create`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          roomname: newRoomName,
+          creator: user.username,
+          entrancePassword: newRoomPassword,
+        }),
+      });
 
-    if (!res.ok) {
-      alert("Room creation failed");
-      return;
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Failed to create new room");
+      }
+
+      setRooms([{ roomname: newRoomName, creator: user.username }, ...rooms]);
+      setSelectedRoom(newRoomName);
+
+      toast.success(`Room "${newRoomName}" created!`);
+
+      setNewRoomName("");
+      setNewRoomPassword("");
+      setShowCreateModal(false);
+      
+    } catch (error) {
+      toast.error(error.message);
     }
-
-    setRooms([{ roomname: newRoomName, creator: user.username }, ...rooms]);
-    setSelectedRoom(newRoomName);
-
-    setNewRoomName("");
-    setNewRoomPassword("");
-    setShowCreateModal(false);
+    
   };
   
 return (
