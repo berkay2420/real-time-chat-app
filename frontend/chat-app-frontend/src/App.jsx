@@ -25,7 +25,9 @@ function AppContent() {
   }
 
   const socket = user
-    ? io(import.meta.env.VITE_SERVER_URL)
+    ? io(import.meta.env.VITE_SERVER_URL, {
+      withCredentials: true
+    })
     : null;
 
   return (

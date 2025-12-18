@@ -16,6 +16,7 @@ const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 
 const app = express();
 
+
 app.use(cors({
   origin: CLIENT_URL,
   methods: ["GET", "POST"],
@@ -29,6 +30,9 @@ app.use(cookieParser());
 
 connectDB();
 
+app.use("/auth", authRoute);
+app.use("/rooms", roomRoute);
+
 const server = http.createServer(app);
 
 const io = new Server(server, {
@@ -40,12 +44,14 @@ const io = new Server(server, {
 
 connectSocket(io);
 
-const PORT = process.env.PORT || 4000;
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(401).json({ message: err.message || "Unauthorized" });
+});
 
-app.use("/auth", authRoute);
-app.use("/rooms", roomRoute);
+const PORT = process.env.PORT || 8080;
 
-server.listen(PORT, ()=>{
+server.listen(PORT, () => {
   console.log(`The server started listening on port ${PORT}`);
 });
 
