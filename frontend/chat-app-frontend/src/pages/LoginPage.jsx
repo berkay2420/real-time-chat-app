@@ -33,7 +33,13 @@ const LoginPage = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 px-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleLogin();
+        }}
+        className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8"
+      >
         <div className="flex flex-col items-center mb-6">
           <div className="bg-blue-600 p-3 rounded-lg mb-3">
             <MessageSquare className="w-8 h-8 text-white" />
@@ -59,7 +65,7 @@ const LoginPage = () => {
           />
 
           <button
-            onClick={handleLogin}
+            type="submit"
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition"
           >
             Login
@@ -72,7 +78,7 @@ const LoginPage = () => {
             Register
           </Link>
         </p>
-      </div>
+      </form>
     </div>
   );
 };

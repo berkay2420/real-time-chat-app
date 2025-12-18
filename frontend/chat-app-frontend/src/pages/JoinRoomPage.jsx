@@ -147,7 +147,13 @@ return (
             </div>
 
             {/* Action Bar */}
-            <div className="flex flex-col md:flex-row gap-4 pt-6 border-t border-slate-100">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                joinRoom();
+              }}
+              className="flex flex-col md:flex-row gap-4 pt-6 border-t border-slate-100"
+            >
               <div className="flex-1">
                 <input
                   type="password"
@@ -157,14 +163,15 @@ return (
                   className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700 placeholder:text-slate-400"
                 />
               </div>
+
               <button
-                onClick={joinRoom}
-                disabled={!selectedRoom}
-                className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white font-semibold py-3.5 px-8 rounded-xl transition-all shadow-lg shadow-blue-500/30 hover:shadow-blue-500/40 active:transform active:scale-95"
+                type="submit"
+                disabled={!selectedRoom || !roomPassword}
+                className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white font-semibold py-3.5 px-8 rounded-xl transition-all shadow-lg shadow-blue-500/30 hover:shadow-blue-500/40 active:scale-95"
               >
                 Join Room <ArrowRight className="w-5 h-5" />
               </button>
-            </div>
+            </form>
           </div>
         </div>
       </div>
