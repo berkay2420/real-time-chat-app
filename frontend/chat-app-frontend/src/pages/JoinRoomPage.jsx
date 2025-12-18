@@ -20,13 +20,11 @@ const JoinRoomPage = ({ socket }) => {
 
   //get rooms
   useEffect(() => {
-  fetch(`${API_URL}/rooms`)
-    .then((res) => res.json())
-    .then((data) => {
-      setRooms(Array.isArray(data) ? data : []);
-    })
-    .catch(() => setRooms([]));
-    }, []);
+    fetch(`${API_URL}/rooms`)
+      .then((res) => res.json())
+      .then((data) => setRooms(data))
+      .catch(() => setRooms([]));
+  }, []);
 
 
   const joinRoom = async () => {
