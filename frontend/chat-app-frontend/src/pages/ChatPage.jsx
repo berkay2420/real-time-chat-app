@@ -78,7 +78,7 @@ const ChatRoomPage = ({ socket }) => {
       )}
 
       {/* Chat Area */}
-      <div className="flex flex-col flex-1 h-full relative z-10">
+      <div className="flex flex-col flex-1 min-h-0">
         <div className="hidden md:flex items-center px-6 py-4 bg-white border-b border-slate-100 shadow-sm">
            <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
              <span className="text-2xl">#</span> {room}
@@ -87,7 +87,7 @@ const ChatRoomPage = ({ socket }) => {
         
         <MessagesPanel socket={socket} room={room} />
         
-        <div className="p-4 bg-white md:bg-transparent">
+        <div className="flex-shrink-0 p-4 bg-white md:bg-transparent border-t md:border-t-0 md:border-slate-100">
           <MessageInput
             socket={socket}
             room={room}

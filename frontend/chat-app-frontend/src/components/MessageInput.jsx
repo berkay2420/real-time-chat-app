@@ -29,6 +29,7 @@ const MessageInput = ({ room, username, socket }) => {
     <div className="relative flex items-center gap-2 bg-white p-2 rounded-2xl shadow-sm border border-slate-200 focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all">
       <input
         value={message}
+        inputMode="text"
         onChange={(e) => setMessage(e.target.value)}
         placeholder="Type your message..."
         className="flex-1 bg-transparent px-4 py-3 text-slate-700 placeholder:text-slate-400 focus:outline-none text-sm sm:text-base"
