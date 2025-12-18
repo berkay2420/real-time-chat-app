@@ -8,6 +8,11 @@ const createRoomService = async(roomname, creator, entrancePassword, res) => {
       throw new Error("You have to set roomname and password ");
     }
 
+    const existingRoom = await Room.findOne({ roomname });
+    if (existingRoom) {
+      throw new Error("Room with this name already exists");
+    }
+
     const hashedPassword = await bcrypt.hash(entrancePassword, 10);
 
     const newRoom = new Room({
@@ -28,7 +33,7 @@ const createRoomService = async(roomname, creator, entrancePassword, res) => {
 const getRoomService = async () => {
   try {
     return await Room.find({})
-      .select("roomname creator")
+      .select("roomname creator -entrancePassword")  
       .sort({ createdAt: -1 });
   } catch (error) {
     throw error;

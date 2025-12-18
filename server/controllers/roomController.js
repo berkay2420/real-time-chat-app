@@ -21,7 +21,8 @@ const getRooms = async (req, res) => {
     const rooms = await getRoomService();
     res.status(200).json(rooms);
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error("Get rooms error:", error);
+    res.status(500).json([]); 
   }
 };
 

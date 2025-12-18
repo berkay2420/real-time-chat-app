@@ -2,13 +2,17 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const roomSchema = new Schema({
-  roomname: String,
+  roomname: {
+    type: String,
+    required: true,
+    unique: true  
+  },
+  entrancePassword: {
+    type: String,
+    required: true
+  },
   creator: String,
-  entrancePassword: String,
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
+  createdAt: { type: Date, default: Date.now }
 });
 
 module.exports = mongoose.model('Room', roomSchema);

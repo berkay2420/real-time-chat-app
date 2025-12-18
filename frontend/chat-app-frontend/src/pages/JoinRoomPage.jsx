@@ -19,11 +19,13 @@ const JoinRoomPage = ({ socket }) => {
 
   //get rooms
   useEffect(() => {
-    fetch(`${API_URL}/rooms`)
-      .then((res) => res.json())
-      .then((data) => setRooms(data))
-      .catch(() => setRooms([]));
-  }, []);
+  fetch(`${API_URL}/rooms`)
+    .then((res) => res.json())
+    .then((data) => {
+      setRooms(Array.isArray(data) ? data : []);
+    })
+    .catch(() => setRooms([]));
+    }, []);
 
 
   const joinRoom = async () => {
@@ -88,8 +90,8 @@ return (
             <MessageSquare className="w-8 h-8 text-white" />
           </div>
           <div>
-            <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">Join a Workspace</h1>
-            <p className="mt-2 text-lg text-slate-600">Select a room below or create your own secure channel.</p>
+            <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">Join a Room</h1>
+            <p className="mt-2 text-lg text-slate-600">Select a room below or create your own secure room.</p>
           </div>
         </div>
 
