@@ -37,7 +37,8 @@ const verifyAuthToken = async (token) => {
 const setAuthCookie = (res, token) => {
   res.cookie(cookieName, token, {
     httpOnly: true,
-    sameSite: 'lax',
+    secure: true,
+    sameSite: 'none',
     path: '/',
     maxAge: 60 * 60 * 24 * 7 * 1000
   });

@@ -35,7 +35,6 @@ const io = new Server(server, {
   cors: {
     origin: CLIENT_URL,
     methods: ['GET', 'POST'],
-    credentials: true
   },
 })
 
@@ -43,10 +42,10 @@ connectSocket(io);
 
 const PORT = process.env.PORT || 4000;
 
+app.use("/auth", authRoute);
+app.use("/rooms", roomRoute);
+
 server.listen(PORT, ()=>{
   console.log(`The server started listening on port ${PORT}`);
 });
 
-
-app.use("/auth", authRoute);
-app.use("/rooms", roomRoute);
