@@ -2,6 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import { MessageSquare } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 const RegisterPage = () => {
   const [username, setUsername] = useState("");

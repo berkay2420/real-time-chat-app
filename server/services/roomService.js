@@ -33,9 +33,10 @@ const createRoomService = async(roomname, creator, entrancePassword, res) => {
 const getRoomService = async () => {
   try {
     return await Room.find({})
-      .select("roomname creator -entrancePassword")  
+      .select("roomname creator")  
       .sort({ createdAt: -1 });
   } catch (error) {
+    console.error(`error while fetching rooms ${error}`);
     throw error;
   }
 };
