@@ -9,6 +9,32 @@ const leaveRoom = require('../utils/leaveRoom')
 const CHAT_BOT = 'WelcomeBot';
 let allUsers = [];
 
+const messageRateLimit = new Map();
+
+const checkMessageRateLimit = (socketId) => {
+  const now = Date.now();
+  const limit = messageRateLimit.get(socketId);
+
+  
+  if (!limit || now > limit.resetTime) {
+    messageRateLimit.set(socketId, {
+      count: 1,
+      resetTime: now + 10 * 1000 
+    });
+    return true; 
+  }
+
+  
+  if (limit.count < 10) {
+    limit.count++;
+    return true; 
+  }
+
+  return false; 
+};
+
+
+
 function connectSocket(io) {
 
   //listen to the client
@@ -23,9 +49,13 @@ function connectSocket(io) {
     //adding user to the room
     socket.on('join_room', (data) => {
       const { username, room } = data;
-      socket.join(room);
 
-      
+      if (!username || !room || typeof username !== 'string' || typeof room !== 'string') {
+        socket.emit('join_error', 'Invalid username or room');
+        return;
+      }
+
+      socket.join(room);
 
       allUsers = allUsers.filter((user) => user.id !== socket.id);
       allUsers.push({ id: socket.id, room: room, username: username });
@@ -53,7 +83,7 @@ function connectSocket(io) {
 
       io.in(room).emit('chatroom_users', chatRoomUsers);
 
-      ;
+      
 
       //get last 100 message in room
       getMessages(room)
@@ -67,16 +97,33 @@ function connectSocket(io) {
 
     //send message
     socket.on('send_message', (data) => {
+
+      if (!checkMessageRateLimit(socket.id)) {
+        socket.emit('rate_limit', 'Too many messages. Please slow down.');
+        return;
+      }
+
       const { message, username, room, __createdtime__ } = data;
+
+      if (!message || !username || !room || typeof message !== 'string') {
+        socket.emit('message_error', 'Invalid message data');
+        return;
+      }
+
+      if (message.length > 100) {
+        socket.emit('message_error', 'Message too long');
+        return;
+      }
 
       io.in(room).emit('receive_message', data); //send message to the all users including current user
 
       //save to the database
       saveMessage(message, username, room, __createdtime__)
-        .then((response) => console.log(response))
-        .catch((err) =>
-          console.log(`Error while saving the message error: ${err}`)
-        );
+        .then((response) => {
+        })
+        .catch((err) => {
+          console.log(`Error saving message: ${err}`);
+        })
     });
 
     //leave room
@@ -96,7 +143,8 @@ function connectSocket(io) {
         __createdtime__,
       });
 
-      console.log(`${username} has left the chat`);
+      messageRateLimit.delete(socket.id);
+
     });
 
     socket.on('disconnect', () => {
@@ -109,6 +157,8 @@ function connectSocket(io) {
           username: CHAT_BOT,
         });
       }
+
+      messageRateLimit.delete(socket.id);
     });
   });
 }

@@ -1,5 +1,5 @@
+// middlewares/proxy.js
 const rateLimit = require('express-rate-limit');
-
 
 const limiter = rateLimit({
   windowMs: 60 * 1000, 
@@ -12,7 +12,4 @@ const limiter = rateLimit({
   }
 });
 
-
-module.exports = {
-  limiter,
-};
+module.exports = limiter; 
