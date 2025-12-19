@@ -23,7 +23,7 @@ const LoginPage = () => {
 
       login(res.data);
 
-      toast.success("Logged In as anonous user ");
+      toast.success("Anonymously logged in");
 
       navigate("/");
     } catch (err) {
