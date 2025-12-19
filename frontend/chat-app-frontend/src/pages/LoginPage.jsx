@@ -14,6 +14,23 @@ const LoginPage = () => {
 
   const API_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:4000";
 
+  const handleAnonymousLogin = async () => {
+    try {
+      const res = await axios.post(`${API_URL}/auth/new-anon`, 
+        {},
+        { withCredentials: true }
+      );
+
+      login(res.data);
+
+      toast.success("Logged In as anonous user ");
+
+      navigate("/");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to login, try again");
+    }
+  }
+
   const handleLogin = async () => {
     try {
       const res = await axios.post(
@@ -82,6 +99,27 @@ const LoginPage = () => {
             Register
           </Link>
         </p>
+        <div className="mt-6">
+          <div className="flex items-center my-4">
+            <div className="flex-1 h-px bg-gray-200" />
+            <span className="px-3 text-xs text-gray-400">OR</span>
+            <div className="flex-1 h-px bg-gray-200" />
+          </div>
+
+          <div className="text-center space-y-2">
+            <p className="text-sm text-gray-600">
+              Want to continue without creating an account?
+            </p>
+
+            <button
+              type="button"
+              onClick={handleAnonymousLogin}
+              className="w-full border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold py-2 rounded-lg transition"
+            >
+              Continue as Guest
+            </button>
+        </div>
+      </div>
       </form>
     </div>
   );

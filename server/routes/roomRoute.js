@@ -4,11 +4,13 @@ const router = express.Router();
 const {
   createRoom,
   getRooms,
-  verifyRoomEntrance
+  verifyRoomEntrance,
+  getPublicRooms
 } = require("../controllers/roomController");
 
 router.post("/create", createRoom);
 router.get("/", getRooms);
 router.post("/verify", verifyRoomEntrance);
+router.get("/public-rooms", getPublicRooms);
 
 module.exports = router;

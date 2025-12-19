@@ -1,6 +1,6 @@
 const Room = require('../models/room');
 const bcrypt = require("bcrypt");
-
+const PublicRoom = require('../models/publicRoom')
 
 const createRoomService = async(roomname, creator, entrancePassword, res) => {
   try {
@@ -55,9 +55,20 @@ const verifyRoomEntranceService = async (roomname, password) => {
   return { success: true };
 };
 
+const getPublicRoomsService = async () => {
+  try {
+    return await PublicRoom.find({})
+      .select("roomname")  
+      .sort({ createdAt: -1 });
+  } catch (error) {
+    console.error(`error while fetching rooms ${error}`);
+    throw error;
+  }
+}
 
 module.exports = {
   createRoomService,
   getRoomService,
-  verifyRoomEntranceService
+  verifyRoomEntranceService,
+  getPublicRoomsService
 };

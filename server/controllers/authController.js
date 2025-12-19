@@ -1,7 +1,8 @@
 const {
   loginService,
   registerService,
-  getCurrentUserService
+  getCurrentUserService,
+  createAnonUserService
 } = require("../services/authService");
 
 const login = async (req, res) => {
@@ -45,9 +46,19 @@ const getCurrentUser = async (req, res) => {
   }
 };
 
-
+const createAnonuser = async (req, res) => {
+  try {
+    const anonUser = await createAnonUserService(res);
+    res.status(201).json(anonUser);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+}
 module.exports = {
   login,
   register,
-  getCurrentUser
+  getCurrentUser,
+  createAnonuser
 };

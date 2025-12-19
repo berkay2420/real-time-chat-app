@@ -12,6 +12,8 @@ const JoinRoomPage = ({ socket }) => {
   const [selectedRoom, setSelectedRoom] = useState("");
   const [roomPassword, setRoomPassword] = useState("");
 
+  const [publicRooms, setPublicRooms] = useState([]);
+
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newRoomName, setNewRoomName] = useState("");
   const [newRoomPassword, setNewRoomPassword] = useState("");
@@ -26,6 +28,13 @@ const JoinRoomPage = ({ socket }) => {
       .catch(() => setRooms([]));
   }, []);
 
+  //get public rooms
+  useEffect(() => {
+  fetch(`${API_URL}/rooms/public-rooms`)
+    .then(res => res.json())
+    .then(data => setPublicRooms(data))
+    .catch(() => setPublicRooms([]));
+}, []);
 
   const joinRoom = async () => {
     if (!selectedRoom || !roomPassword) return;
@@ -107,6 +116,50 @@ return (
         {/* Main Content Area */}
         <div className="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden">
           <div className="p-8">
+
+            {publicRooms.length > 0 && (
+              <div className="mb-10">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
+                    <MessageSquare className="w-5 h-5 text-green-500" />
+                    Public Rooms
+                  </h2>
+                  <span className="text-xs text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+                    Open Access
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  {publicRooms.map((room) => (
+                    <button
+                      key={room.roomname}
+                      onClick={() => {
+                        socket.emit("join_room", {
+                          username: user.username,
+                          room: room.roomname,
+                        });
+                        toast.success(`Joined #${room.roomname}`);
+                        navigate(`/chat?room=${room.roomname}`);
+                      }}
+                      className="p-4 rounded-xl border-2 border-green-100 bg-green-50/40 hover:bg-green-100/40 transition-all text-left"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-bold text-slate-800">
+                            #{room.roomname}
+                          </p>
+                          <p className="text-xs text-slate-500 mt-1">
+                            No password required
+                          </p>
+                        </div>
+                        <ArrowRight className="w-5 h-5 text-green-600" />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div className="my-6 border-t border-slate-200" />
             
             {/* Rooms Grid */}
             <div className="mb-8">

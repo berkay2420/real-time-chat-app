@@ -1,7 +1,8 @@
 const {
   createRoomService,
   getRoomService,
-  verifyRoomEntranceService
+  verifyRoomEntranceService,
+  getPublicRoomsService
 } = require("../services/roomService");
 
 const createRoom = async (req, res) => {
@@ -38,8 +39,19 @@ const verifyRoomEntrance = async (req, res) => {
   }
 };
 
+const getPublicRooms = async(req, res) => {
+  try {
+    const rooms = await getPublicRoomsService();
+    res.status(200).json(rooms);
+  } catch (error) {
+    console.error("Get public rooms error:", error);
+    res.status(500).json([]); 
+  }
+}
+
 module.exports = {
   createRoom,
   getRooms,
-  verifyRoomEntrance
+  verifyRoomEntrance,
+  getPublicRooms
 };

@@ -3,7 +3,10 @@ const bcrypt = require("bcrypt");
 require('dotenv').config();
 
 const User = require('../models/user');
+const AnonUser = require('../models/anaonUser');
+
 const { signAuthToken, setAuthCookie, getAuthCookie, verifyAuthToken  } = require("../utils/authUtils");
+
 
 const registerService = async (username, password, res) => {
   try {
@@ -81,7 +84,9 @@ const loginService = async (username, password, res) => {
 };
 
 const getCurrentUserService = async (req) => {
+  
   try {
+
     const token = getAuthCookie(req);
     console.log("Token:", token);
 
@@ -90,10 +95,12 @@ const getCurrentUserService = async (req) => {
     }
 
     const payload = await verifyAuthToken(token);
-    console.log("Payload:", payload);
 
+    let user = await User.findById(payload.userId);
 
-    const user = await User.findById(payload.userId);
+    if (!user) {
+      user = await AnonUser.findById(payload.userId);
+    }
 
     if (!user) {
       throw new Error("User not found");
@@ -103,14 +110,56 @@ const getCurrentUserService = async (req) => {
       id: user._id,
       username: user.username,
     };
+
   } catch (error) {
-    console.log("Error:", error.message); 
+    console.log("Error:", error.message);
     throw error;
   }
 };
 
+const createAnonUsername = async () => {
+  let username;
+  let existingUsername;
+
+  do {
+    const randomNum = Math.floor(Math.random() * (9999 - 1000 + 1)) + 1000;
+    username = `anon-${randomNum.toString()}`;
+    existingUsername = await AnonUser.findOne({ username });
+  } while (existingUsername);
+  
+  return username;
+};
+
+const createAnonUserService = async (res) => {
+  try {
+    const username = await createAnonUsername();
+
+    const newAnonUser = await AnonUser.create({
+      username: username
+    });
+
+    await newAnonUser.save();
+
+    const payload = {
+      userId: newAnonUser._id.toHexString(),
+      username: newAnonUser.username,
+    }
+
+    const token = await signAuthToken(payload);
+    setAuthCookie(res, token);
+
+    return {
+      id: newAnonUser._id.toString(),
+      username: newAnonUser.username,
+    };
+  } catch (error) {
+    throw error;
+  }
+}
+
 module.exports = {
   registerService,
   loginService,
-  getCurrentUserService
+  getCurrentUserService,
+  createAnonUserService
 };
