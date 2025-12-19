@@ -125,7 +125,7 @@ return (
                     Public Rooms
                   </h2>
                   <span className="text-xs text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
-                    Open Access
+                    No password required
                   </span>
                 </div>
 
@@ -149,7 +149,7 @@ return (
                             #{room.roomname}
                           </p>
                           <p className="text-xs text-slate-500 mt-1">
-                            No password required
+                            Open 
                           </p>
                         </div>
                         <ArrowRight className="w-5 h-5 text-green-600" />
@@ -165,7 +165,7 @@ return (
             <div className="mb-8">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-2lg font-semibold text-slate-800 flex items-center gap-2">
-                  <Hash className="w-5 h-5 text-blue-500" /> Available Rooms
+                  <Hash className="w-5 h-5 text-blue-500" /> Private Rooms
                 </h2>
                 <span className="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full">{rooms.length} Active</span>
               </div>

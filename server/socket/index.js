@@ -6,7 +6,7 @@ const leaveRoom = require('../utils/leaveRoom')
 //io --> main server
 //socket1, socket2, socket3... --> users
 
-const CHAT_BOT = 'SocketBot';
+const CHAT_BOT = 'WelcomeBot';
 let allUsers = [];
 
 function connectSocket(io) {

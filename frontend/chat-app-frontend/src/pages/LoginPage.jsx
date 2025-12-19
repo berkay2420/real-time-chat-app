@@ -116,7 +116,7 @@ const LoginPage = () => {
               onClick={handleAnonymousLogin}
               className="w-full border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold py-2 rounded-lg transition"
             >
-              Continue as Guest
+              Continue anonymously
             </button>
         </div>
       </div>
