@@ -9,6 +9,8 @@ const cookieParser = require("cookie-parser");
 const {connectDB} = require('./database/database');
 const connectSocket = require('./socket/index');
 
+const rateLimiter = require('./middlewares/proxy');
+
 const authRoute = require('./routes/authRoute');
 const roomRoute = require('./routes/roomRoute');
 
@@ -29,6 +31,8 @@ app.use(cookieParser());
 
 
 connectDB();
+
+app.use(rateLimiter);
 
 app.use("/auth", authRoute);
 app.use("/rooms", roomRoute);

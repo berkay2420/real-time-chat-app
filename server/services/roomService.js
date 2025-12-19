@@ -2,21 +2,48 @@ const Room = require('../models/room');
 const bcrypt = require("bcrypt");
 const PublicRoom = require('../models/publicRoom')
 
+
+require('dotenv').config();
+
+const dummyHash = process.env.DUMMY_HASH;
+
+const validateRoomname = (roomname) => {
+  if (!roomname || typeof roomname !== 'string') {
+    throw new Error("Invalid room name");
+  }
+  if (roomname.length < 3 || roomname.length > 50) {
+    throw new Error("Invalid room name");
+  }
+  return roomname.trim();
+};
+
+const validatePassword = (password) => {
+  if (!password || typeof password !== 'string') {
+    throw new Error("Invalid password");
+  }
+  if (password.length < 6 || password.length > 256) {
+    throw new Error("Invalid password");
+  }
+  return password;
+};
+
+
 const createRoomService = async(roomname, creator, entrancePassword, res) => {
   try {
-    if (!roomname || !entrancePassword) {
-      throw new Error("You have to set roomname and password ");
-    }
 
-    const existingRoom = await Room.findOne({ roomname });
+    const validRoomname = validateRoomname(roomname);
+    const validPassword = validatePassword(entrancePassword);
+
+    
+    const existingRoom = await Room.findOne({ roomname: validRoomname });
     if (existingRoom) {
-      throw new Error("Room with this name already exists");
+      throw new Error("Room name already exists");
     }
 
-    const hashedPassword = await bcrypt.hash(entrancePassword, 10);
+    const hashedPassword = await bcrypt.hash(validPassword, 10);
 
     const newRoom = new Room({
-      roomname,
+      roomname: validRoomname,
       entrancePassword: hashedPassword,
       creator
     });
@@ -24,7 +51,7 @@ const createRoomService = async(roomname, creator, entrancePassword, res) => {
     await newRoom.save();
 
   } catch (error) {
-    console.error("Create room error:", error);
+
     throw error;
     
   }
@@ -42,17 +69,28 @@ const getRoomService = async () => {
 };
 
 const verifyRoomEntranceService = async (roomname, password) => {
-  const room = await Room.findOne({ roomname });
-  if (!room) {
-    throw new Error("Room not found");
-  }
+  try {
+    const validRoomname = validateRoomname(roomname);
+    const validPassword = validatePassword(password);
 
-  const isMatch = await bcrypt.compare(password, room.entrancePassword);
-  if (!isMatch) {
-    throw new Error("Invalid password");
-  }
+    
+    const room = await Room.findOne({ roomname: validRoomname });
+    
+    if (!room) {
+      await bcrypt.compare(validPassword, dummyHash);
+      throw new Error("Invalid room name or password");
+    }
 
-  return { success: true };
+    
+    const isMatch = await bcrypt.compare(validPassword, room.entrancePassword);
+    if (!isMatch) {
+      throw new Error("Invalid room name or password");
+    }
+
+    return { success: true };
+  } catch (error) {
+    throw error;
+  }
 };
 
 const getPublicRoomsService = async () => {

@@ -1,28 +1,55 @@
-const bcrypt = require("bcrypt");
-
 require('dotenv').config();
+
+const bcrypt = require("bcrypt");
 
 const User = require('../models/user');
 const AnonUser = require('../models/anaonUser');
 
 const { signAuthToken, setAuthCookie, getAuthCookie, verifyAuthToken  } = require("../utils/authUtils");
 
+const validateUsername = (username) => {
+  if (!username || typeof username !== 'string') {
+    throw new Error("Invalid username");
+  }
+  if (username.length < 3 || username.length > 50) {
+    throw new Error("Invalid username");
+  }
+  return username.trim();
+};
+
+const validatePassword = (password) => {
+  if (!password || typeof password !== 'string') {
+    throw new Error("Invalid password");
+  }
+  if (password.length < 6 || password.length > 256) {
+    throw new Error("Invalid password");
+  }
+  return password;
+};
+
+const dummyHash = process.env.DUMMY_HASH;
+
+
 
 const registerService = async (username, password, res) => {
   try {
-    if (!username || !password) {
-      throw new Error("Username and password are required");
-    }
 
-    const existingUser = await User.findOne({ username });
+    const validUsername = validateUsername(username);
+    const validPassword = validatePassword(password);
+
+
+    const existingUser = await User.findOne({ 
+      username: validUsername 
+    });
     if (existingUser) {
-      throw new Error("Username already exists");
+      throw new Error("Invalid username or password");
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const hashedPassword = await bcrypt.hash(validPassword, 10);
 
     const newUser = new User({
-      username,
+      username: validUsername,
       password: hashedPassword,
     });
 
@@ -45,25 +72,25 @@ const registerService = async (username, password, res) => {
   }
 };
 
-
 const loginService = async (username, password, res) => {
   try {
-    if (!username || !password) {
-      throw new Error("Username and password are required");
-    }
+    const validUsername = validateUsername(username);
+    const validPassword = validatePassword(password);
 
-    const existingUser = await User.findOne({ username });
+
+    const existingUser = await User.findOne({ username: validUsername });
     if (!existingUser) {
-      throw new Error("User Not Exists");
+      await bcrypt.compare(validPassword, dummyHash);
+      throw new Error("Invalid username or password");
     }
 
     const isPasswordValid = await bcrypt.compare(
-      password,
+      validPassword,
       existingUser.password
     );
 
     if (!isPasswordValid) {
-      throw new Error("Invalid password");
+      throw new Error("Invalid username or password");
     }
 
     const payload = {
@@ -88,7 +115,7 @@ const getCurrentUserService = async (req) => {
   try {
 
     const token = getAuthCookie(req);
-    console.log("Token:", token);
+    
 
     if (!token) {
       throw new Error("No auth token found");
@@ -112,7 +139,7 @@ const getCurrentUserService = async (req) => {
     };
 
   } catch (error) {
-    console.log("Error:", error.message);
+    
     throw error;
   }
 };

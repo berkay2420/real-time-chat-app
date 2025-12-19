@@ -14,10 +14,10 @@ function connectSocket(io) {
   //listen to the client
   io.on('connection', (socket) => {
 
-    console.log(`User connected: ${socket.id}`);
+    
 
     socket.on("custom_event", (number, string) => {
-      console.log(number, string);
+      
     });
 
     //adding user to the room
@@ -25,7 +25,7 @@ function connectSocket(io) {
       const { username, room } = data;
       socket.join(room);
 
-      console.log(`User ${username} joined room ${room}`);
+      
 
       allUsers = allUsers.filter((user) => user.id !== socket.id);
       allUsers.push({ id: socket.id, room: room, username: username });
@@ -53,8 +53,7 @@ function connectSocket(io) {
 
       io.in(room).emit('chatroom_users', chatRoomUsers);
 
-      console.log(`all users ${JSON.stringify(allUsers)}`);
-      console.log(`users in this room ${JSON.stringify(chatRoomUsers)}`);
+      ;
 
       //get last 100 message in room
       getMessages(room)

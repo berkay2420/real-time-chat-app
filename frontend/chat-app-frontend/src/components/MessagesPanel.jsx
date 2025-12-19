@@ -19,9 +19,9 @@ const MessagesPanel = ({ socket, room }) => {
 
   useEffect(() => {
 
-    console.log('listening CLIENT: receive_message .');
+    
     const handleReceiveMessage = (data) => {
-      console.log('MESSAGE RECEIVED:', data);
+      
       setMessagesReceived((state) => [
         ...state,
         {
@@ -36,7 +36,7 @@ const MessagesPanel = ({ socket, room }) => {
 
     return () => {
       socket.off('receive_message', handleReceiveMessage);
-      console.log('UNMOUNTING CLIENT: receive_message listener .')
+      
     }
     
   }, [socket]);
@@ -45,7 +45,7 @@ const MessagesPanel = ({ socket, room }) => {
   useEffect(() => {
     if (!hasLoadedLastMessagesRef.current) {
       const handleLastMessages = (lastMessages) => {
-        console.log(`fetched last 100 messages from room`);
+        
         const sorted = sortMessagesByDate(lastMessages);
         setMessagesReceived(sorted);
         hasLoadedLastMessagesRef.current = true;
